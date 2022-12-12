@@ -135,7 +135,17 @@ function getTokenAndUser($params, $settings)
         'client_secret'=> $settings['client_secret'],
     ], $params));
     $url = $settings['token_url'] . '?' . $queryParams;
-    $response = file_get_contents($url);
+    $context = stream_context_create([
+        "http"=> [
+            "method" => 'POST',
+            'header'  => [
+                'Content-Type: application/x-www-form-urlencoded',
+                'Accept: application/json'
+            ],
+            'content' => $queryParams
+        ]
+    ]);
+    $response = file_get_contents($url,false,$context);
     $response = json_decode($response, true);
     $token = $response['access_token'];
 
