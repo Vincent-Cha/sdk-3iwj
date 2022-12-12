@@ -14,7 +14,7 @@ function login()
     $_SESSION['state'] = uniqid();
 
     $queryParams = http_build_query([
-        'reponse_type'=> "code",
+        'response_type'=> "code",
         'state' => $_SESSION['state'],
         'scope' => 'basic',
         'client_id'=> OAUTH_CLIENTID,
@@ -30,7 +30,7 @@ function login()
     echo "<br>";
 
     $queryParams = http_build_query([
-        'reponse_type'=> "code",
+        'response_type'=> "code",
         'state' => $_SESSION['state'],
         'scope' => '',
         'client_id'=> FB_CLIENTID,
@@ -41,13 +41,13 @@ function login()
     echo "<br>";
 
     $queryParams = http_build_query([
-        'reponse_type'=> "code",
+        'response_type'=> "code",
         'state' => $_SESSION['state'],
-        'scope' => '',
+        'scope' => 'identify connections',
         'client_id'=> DC_CLIENTID,
         "redirect_uri"=> "http://localhost:8081/dc_success"
     ]);
-    $url = "https://discord.com/oauth2/authorize" . $queryParams;
+    $url = "https://discord.com/oauth2/authorize?" . $queryParams;
     echo "<a href='$url'>Se connecter via Discord</a>";
 }
 
@@ -107,7 +107,7 @@ function redirectDcSuccess()
         "client_id" => DC_CLIENTID,
         "client_secret" => DC_CLIENTSECRET,
         "token_url" => "https://discord.com/api/oauth2/token",
-        "user_url" => "https://discord.com/api/users/me"
+        "user_url" => "https://discord.com/api/oauth2/@me"
     ]);
 }
 
