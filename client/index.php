@@ -6,6 +6,8 @@ define("OAUTH_CLIENTID", "id_635913414ff1f4.96204950");
 define("OAUTH_CLIENTSECRET", "82eb52781cc74ce5564927d4e7223e07ab28f489");
 define("FB_CLIENTID", "793044745254704");
 define("FB_CLIENTSECRET", "29fad9df806d99e7a36aa2ef43d8c65e");
+define("DC_CLIENTID", "1051884779085234228");
+define("DC_CLIENTSECRET", "jg1LYzKQFgKAIPrfAdc8ithNeloE3cGM");
 
 function login()
 {
@@ -36,6 +38,17 @@ function login()
     ]);
     $url = "https://www.facebook.com/v15.0/dialog/oauth?" . $queryParams;
     echo "<a href='$url'>Se connecter via Facebook</a>";
+    echo "<br>";
+
+    $queryParams = http_build_query([
+        'reponse_type'=> "code",
+        'state' => $_SESSION['state'],
+        'scope' => '',
+        'client_id'=> DC_CLIENTID,
+        "redirect_uri"=> "http://localhost:8081/dc_success"
+    ]);
+    $url = "https://discord.com/oauth2/authorize" . $queryParams;
+    echo "<a href='$url'>Se connecter via Discord</a>";
 }
 
 function redirectSuccess()
@@ -76,6 +89,25 @@ function redirectFbSuccess()
         "client_secret" => FB_CLIENTSECRET,
         "token_url" => "https://graph.facebook.com/oauth/access_token",
         "user_url" => "https://graph.facebook.com/me"
+    ]);
+}
+
+function redirectDcSuccess()
+{
+    ["code" => $code, "state" => $state] = $_GET;
+    if ($state !== $_SESSION['state']) {
+        return http_response_code(400);
+    }
+
+    getTokenAndUser([
+        'grant_type'=> "authorization_code",
+        "code" => $code,
+        "redirect_uri"=> "http://localhost:8081/dc_success"
+    ], [
+        "client_id" => DC_CLIENTID,
+        "client_secret" => DC_CLIENTSECRET,
+        "token_url" => "https://discord.com/api/oauth2/token",
+        "user_url" => "https://discord.com/api/users/me"
     ]);
 }
 
@@ -132,6 +164,9 @@ switch($url) {
         break;
     case '/fb_success':
         redirectFbSuccess();
+        break;
+    case '/dc_success':
+        redirectDcSuccess();
         break;
     default:
         http_response_code(404);
