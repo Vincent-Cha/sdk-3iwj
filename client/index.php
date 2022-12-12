@@ -6,6 +6,8 @@ define("OAUTH_CLIENTID", "id_635913414ff1f4.96204950");
 define("OAUTH_CLIENTSECRET", "82eb52781cc74ce5564927d4e7223e07ab28f489");
 define("FB_CLIENTID", "793044745254704");
 define("FB_CLIENTSECRET", "29fad9df806d99e7a36aa2ef43d8c65e");
+define("GIT_CLIENTID", "cd85ead1ba1f79b26fb7");
+define("GIT_CLIENTSECRET", "4936fdb0000fb4c2a3d5a8dab008218e109a7005");
 
 function login()
 {
@@ -36,6 +38,17 @@ function login()
     ]);
     $url = "https://www.facebook.com/v15.0/dialog/oauth?" . $queryParams;
     echo "<a href='$url'>Se connecter via Facebook</a>";
+    echo "<br>";
+
+    $queryParams = http_build_query([
+        'reponse_type'=> "code",
+        'state' => $_SESSION['state'],
+        'scope' => 'repo,gist',
+        'client_id'=> GIT_CLIENTID,
+        "redirect_uri"=> "http://localhost:8081/git_success"
+    ]);
+    $url = "https://github.com/login/oauth/authorize?" . $queryParams;
+    echo "<a href='$url'>Se connecter via GitHub</a>";
 }
 
 function redirectSuccess()
@@ -79,6 +92,28 @@ function redirectFbSuccess()
     ]);
 }
 
+function redirectGitSuccess()
+{
+    ["code" => $code, "state" => $state] = $_GET;
+    if ($state !== $_SESSION['state']) {
+        return http_response_code(400);
+    }
+
+    getTokenAndUser([
+        'grant_type'=> "authorization_code",
+        "code" => $code,
+        "redirect_uri"=> "http://localhost:8081/git_success"
+    ], [
+        "client_id" => GIT_CLIENTID,
+        "client_secret" => GIT_CLIENTSECRET,
+        "token_url" => "https://github.com/login/oauth/access_token",
+        "user_url" => "https://api.github.com/user",
+        "method" => 'POST',
+        "content-type" => 'Content-Type: application/xml',
+        "accept" => 'Accept: application/json'
+    ]);
+}
+
 function doLogin()
 {
     getTokenAndUser(
@@ -103,15 +138,26 @@ function getTokenAndUser($params, $settings)
         'client_secret'=> $settings['client_secret'],
     ], $params));
     $url = $settings['token_url'] . '?' . $queryParams;
-    $response = file_get_contents($url);
+    $context = stream_context_create([
+        "http"=> [
+            "method" => $settings['method'],
+            'header'  => [
+                $settings['content-type'],
+                $settings['accept']
+            ],
+            'content' => $queryParams
+        ]
+    ]);
+    $response = file_get_contents($url,false,$context);
     $response = json_decode($response, true);
     $token = $response['access_token'];
 
     $context = stream_context_create([
         "http"=> [
             "header" => [
-                "Authorization: Bearer " . $token
-            ]
+                "Authorization: Bearer " . $token,
+                'User-Agent: SDK'
+            ],
         ]
             ]);
     $url = $settings['user_url'];
@@ -132,6 +178,9 @@ switch($url) {
         break;
     case '/fb_success':
         redirectFbSuccess();
+        break;
+    case '/git_success':
+        redirectGitSuccess();
         break;
     default:
         http_response_code(404);
