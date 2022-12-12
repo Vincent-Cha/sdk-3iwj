@@ -52,7 +52,7 @@ function login()
     $url = "https://github.com/login/oauth/authorize?" . $queryParams;
     echo "<a href='$url'>Se connecter via GitHub</a>";
     echo "<br>";
-    
+
     $queryParams = http_build_query([
         'response_type'=> "code",
         'state' => $_SESSION['state'],
@@ -120,7 +120,10 @@ function redirectDcSuccess()
         "client_id" => DC_CLIENTID,
         "client_secret" => DC_CLIENTSECRET,
         "token_url" => "https://discord.com/api/oauth2/token",
-        "user_url" => "https://discord.com/api/oauth2/@me"
+        "user_url" => "https://discord.com/api/oauth2/@me",
+        "method" => 'POST',
+        "content-type" => 'Content-Type: application/x-www-form-urlencoded',
+        "accept" => 'Accept: application/json'
     ]);
 }
 function redirectGitSuccess(){
