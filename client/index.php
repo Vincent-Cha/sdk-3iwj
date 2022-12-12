@@ -8,13 +8,15 @@ define("FB_CLIENTID", "793044745254704");
 define("FB_CLIENTSECRET", "29fad9df806d99e7a36aa2ef43d8c65e");
 define("GIT_CLIENTID", "cd85ead1ba1f79b26fb7");
 define("GIT_CLIENTSECRET", "4936fdb0000fb4c2a3d5a8dab008218e109a7005");
+define("DC_CLIENTID", "1051884779085234228");
+define("DC_CLIENTSECRET", "jg1LYzKQFgKAIPrfAdc8ithNeloE3cGM");
 
 function login()
 {
     $_SESSION['state'] = uniqid();
 
     $queryParams = http_build_query([
-        'reponse_type'=> "code",
+        'response_type'=> "code",
         'state' => $_SESSION['state'],
         'scope' => 'basic',
         'client_id'=> OAUTH_CLIENTID,
@@ -30,7 +32,7 @@ function login()
     echo "<br>";
 
     $queryParams = http_build_query([
-        'reponse_type'=> "code",
+        'response_type'=> "code",
         'state' => $_SESSION['state'],
         'scope' => '',
         'client_id'=> FB_CLIENTID,
@@ -49,6 +51,17 @@ function login()
     ]);
     $url = "https://github.com/login/oauth/authorize?" . $queryParams;
     echo "<a href='$url'>Se connecter via GitHub</a>";
+    echo "<br>";
+    
+    $queryParams = http_build_query([
+        'response_type'=> "code",
+        'state' => $_SESSION['state'],
+        'scope' => 'identify connections',
+        'client_id'=> DC_CLIENTID,
+        "redirect_uri"=> "http://localhost:8081/dc_success"
+    ]);
+    $url = "https://discord.com/oauth2/authorize?" . $queryParams;
+    echo "<a href='$url'>Se connecter via Discord</a>";
 }
 
 function redirectSuccess()
@@ -92,8 +105,25 @@ function redirectFbSuccess()
     ]);
 }
 
-function redirectGitSuccess()
+function redirectDcSuccess()
 {
+    ["code" => $code, "state" => $state] = $_GET;
+    if ($state !== $_SESSION['state']) {
+        return http_response_code(400);
+    }
+
+    getTokenAndUser([
+        'grant_type'=> "authorization_code",
+        "code" => $code,
+        "redirect_uri"=> "http://localhost:8081/dc_success"
+    ], [
+        "client_id" => DC_CLIENTID,
+        "client_secret" => DC_CLIENTSECRET,
+        "token_url" => "https://discord.com/api/oauth2/token",
+        "user_url" => "https://discord.com/api/oauth2/@me"
+    ]);
+}
+function redirectGitSuccess(){
     ["code" => $code, "state" => $state] = $_GET;
     if ($state !== $_SESSION['state']) {
         return http_response_code(400);
@@ -113,7 +143,6 @@ function redirectGitSuccess()
         "accept" => 'Accept: application/json'
     ]);
 }
-
 function doLogin()
 {
     getTokenAndUser(
@@ -181,6 +210,9 @@ switch($url) {
         break;
     case '/git_success':
         redirectGitSuccess();
+        break;
+    case '/dc_success':
+        redirectDcSuccess();
         break;
     default:
         http_response_code(404);
