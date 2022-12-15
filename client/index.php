@@ -4,8 +4,8 @@ session_start();
 
 define("OAUTH_CLIENTID", "id_635913414ff1f4.96204950");
 define("OAUTH_CLIENTSECRET", "82eb52781cc74ce5564927d4e7223e07ab28f489");
-define("FB_CLIENTID", "793044745254704");
-define("FB_CLIENTSECRET", "29fad9df806d99e7a36aa2ef43d8c65e");
+define("FB_CLIENTID", "880024803168727");
+define("FB_CLIENTSECRET", "4c34dc15c8c2a74c70baf0d9e1e1a9fb");
 define("GIT_CLIENTID", "cd85ead1ba1f79b26fb7");
 define("GIT_CLIENTSECRET", "4936fdb0000fb4c2a3d5a8dab008218e109a7005");
 define("DC_CLIENTID", "1051884779085234228");
@@ -81,7 +81,8 @@ function redirectSuccess()
             "client_id" => OAUTH_CLIENTID,
             "client_secret" => OAUTH_CLIENTSECRET,
             "token_url" => "http://server:8080/token",
-            "user_url" => "http://server:8080/me"
+            "user_url" => "http://server:8080/me",
+            "content-type" => "Content-Type: null"
         ]
     );
 }
@@ -101,7 +102,8 @@ function redirectFbSuccess()
         "client_id" => FB_CLIENTID,
         "client_secret" => FB_CLIENTSECRET,
         "token_url" => "https://graph.facebook.com/oauth/access_token",
-        "user_url" => "https://graph.facebook.com/me"
+        "user_url" => "https://graph.facebook.com/me",
+        "content-type" => "Content-Type: null"
     ]);
 }
 
@@ -170,17 +172,17 @@ function getTokenAndUser($params, $settings)
         'client_secret'=> $settings['client_secret'],
     ], $params));
     $url = $settings['token_url'] . '?' . $queryParams;
-    $context = stream_context_create([
+    $context = stream_context_create (array(
         "http"=> [
-            "method" => $settings['method'],
+            "method" => $settings['method'] ?? null,
             'header'  => [
-                $settings['content-type'],
-                $settings['accept']
+                $settings['content-type'] ?? null,
+                $settings['accept'] ?? null
             ],
             'content' => $queryParams
         ]
-    ]);
-    $response = file_get_contents($url,false,$context);
+    ));
+    $response = file_get_contents($url, false, $context);
     $response = json_decode($response, true);
     $token = $response['access_token'];
 
