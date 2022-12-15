@@ -17,3 +17,13 @@ services:
     command: "php -S 0.0.0.0:8081"
     ports:
       - "8081:8081"
+  
+  sdk:
+    image: php:alpine
+    volumes:
+      - "./src:/app"
+    working_dir: "/app"
+    command: "php -S 0.0.0.0:8082"
+    ports:
+      - "8082:8082"
+

@@ -1,0 +1,27 @@
+{
+  "Facebook":
+  {
+    "class": "Facebook",
+    "client_id" : "3464216433813689",
+    "client_secret" : "bd066591951c3a36536989ad4136db0b"
+  },
+    
+
+  "Discord":
+  {
+    "class": "Discord",
+    "client_id": "1052972204515655700",
+    "client_secret": "YFbqXs4Zjx0KEMyUC1GVLdWK-AHIWdw-"
+  },
+   
+
+  "GitHub":
+  {
+    "class": "GitHub",
+    "client_id": "cd85ead1ba1f79b26fb7",
+    "client_secret": "4936fdb0000fb4c2a3d5a8dab008218e109a7005"
+  }
+    
+}
+
+  
